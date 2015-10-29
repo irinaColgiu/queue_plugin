@@ -1,12 +1,8 @@
 GATK/Queue plugin
 
-The GATK's pipelining system (Queue - https://www.broadinstitute.org/gatk/guide/topic?name=queue) uses QScripts for describing the flow of data through the pipeline and processing done on it. This application is used for converting a QScript into an abstract directed acyclic graph (adag). From the ADAG that contains the input, output and bash command for each node, the functionality is automatically extracted into a shell script with the same functionality as the original qscript. The shell script has been obtained through a topological sort of the ADAG, hence by transforming the graph into a set of steps, to be executed serially.
+The GATK's pipelining system (Queue - https://www.broadinstitute.org/gatk/guide/topic?name=queue) uses QScripts for describing the flow of data through a pipeline and processing done on it. The QScprits are to be executed in parallel in a distributed environment. The current application (Queue_plugin) is used for converting a QScript into a shell script so that the pipeline can be executed serially as well, not only in parallel as done by GATK Queue.
 
-The ADAG that results follows practically the internal representation that Queue uses for the graph of jobs: nodes represent a state described by the bunch of files, edges represent transitions between the states - the next state is obtained by running a command.
-
-The bash commands in the shell scripts represent the components of the pipeline that was originally described in the qscript. Basically the components of the pipeline are to be run sequentially, by invoking GATK jar.
-
-
+The way Queue_plugin achieves this is by parsing the QScript and constructing an abstract directed acyclic graph (ADAG). An ADAG follows the internal representation that Queue uses for the graph of jobs: nodes represent a state described by the bunch of files, edges represent transitions between the states - the next state is obtained by running a command. The ADAG is afterwards transformed into a shell script with the same functionality as the original QScript. The shell script is obtained by topologically sorting the ADAG, hence the result is a sequence of steps(shell commands usually involving GATK) to be executed serially.
 
 Usage:
 The ShellPlugin is to be run with the same parameters as when running Queue itself - for more details see GATK/Queue official documentation. A basic run would take the following mandatory parameters:
@@ -29,13 +25,12 @@ java -jar ShellPlugin.jar -S /path/ExampleUnifiedGenotyper.scala -R /path/exampl
 
 
 Implementation details:
-The GATK/Queue has been used as a library for the implementation of this application that takes a QScript and converts it into a runnable shell script. The plugin's functionality has been obtained by extending the classes of interest from Queue (inheritance).
+The GATK/Queue has been used as a library for the implementation of this application that takes a QScript and converts it into a shell script. The plugin's functionality has been obtained by extending the classes of interest from Queue (inheritance).
 
 Observations: 
 
-The program should be run at least with the parameters mentioned above. A complete list of parameters can be obtained with:
-	ShellPlugin -h 
+The program should be run at least with the parameters mentioned above. A complete list of parameters can be obtained by consulting the help. 
 	
 Please note that these parameters are the same that Queue takes at a normal run. Some of them might not have any impact on the result. 
 
-The intermediary files (files passed between the pipeline's components) are stored in the current directory as hidden files during a run, and must be deleted by hand before the next run.
+The intermediary files (files passed between the pipeline's components) are stored in the current directory as hidden files during a run, and should deleted by hand before the next run.
